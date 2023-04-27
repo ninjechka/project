@@ -9,13 +9,19 @@ class Server : public QTcpServer
     Q_OBJECT
 
 public:
-    Server();   
+    Server(int port, QString ip);
 
 private:
-    QTcpSocket* m_socket;
+    QTcpSocket* m_clientSocket;
+    void sendToServer();
+    void connect();
+
+    QTcpSocket* m_serverSocket;
     QByteArray m_data;
     void sendToClient();
 
+    QString m_ip;
+    int m_port;
 public slots:
     void incomingConnection(qintptr socketDescriptor);
     void slotReadyRead();

@@ -10,6 +10,9 @@ CONFIG -= app_bundle
 SOURCES += \
         client.cpp \
         main.cpp \
+        receiver.cpp \
+        retranslator.cpp \
+        sender.cpp \
         server.cpp
 
 # Default rules for deployment.
@@ -19,4 +22,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     client.h \
+    receiver.h \
+    retranslator.h \
+    sender.h \
     server.h
