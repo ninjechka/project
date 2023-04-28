@@ -8,7 +8,7 @@ Client::Client()
     m_socket = new QTcpSocket(this);
     connect(m_socket, &QTcpSocket::readyRead, this, &Client::slotReadyRead);
     //connect(m_socket, &QTcpSocket::readyRead, this, &Client::slotReadyRead);
-    m_socket->connectToHost(QHostAddress::LocalHost, 6000);
+    m_socket->connectToHost(QHostAddress::LocalHost, 6002);
     if(m_socket->waitForConnected())
         qDebug() << "Connected to Server";
     else
@@ -57,12 +57,13 @@ void Client::slotReadyRead()
         qDebug() << "Waiting for more data to come.. " << message;;
         return;
     }
-    QString header = buffer.mid(0,128);
-    QString fileType = header.split(",")[0].split(":")[1];
-    buffer = buffer.mid(128);
+   // QString header = buffer.mid(0,128);
+    //QString fileType = header.split(",")[0].split(":")[1];
+   // buffer = buffer.mid(128);
 
-    if(fileType=="message"){
+
         QString message = QString("%1 :: %2").arg(m_socket->socketDescriptor()).arg(QString::fromStdString(buffer.toStdString()));
         qDebug() << message;
-    }
+
+   // sendToServer();
 }

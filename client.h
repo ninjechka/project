@@ -1,12 +1,12 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+#include <QObject>
 #include <QTcpSocket>
 
-class Client
+class Client : public QObject
 {
     Q_OBJECT
-
 public:
     Client();
 
@@ -14,7 +14,7 @@ private:
     QTcpSocket* m_socket;
     QByteArray m_data;
     void sendToServer();
-    void connect();
+    void connectTo();
 
 public slots:
     void slotReadyRead();

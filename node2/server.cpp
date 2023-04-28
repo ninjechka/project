@@ -4,7 +4,7 @@
 
 Server::Server(int port, QString ip) : m_port{port}, m_ip{ip}
 {
-    if (this->listen(QHostAddress::Any, 6001))
+    if (this->listen(QHostAddress::Any, 6003))
     {
         qDebug() << "start";
     }
@@ -31,14 +31,14 @@ void Server::incomingConnection(qintptr socketDescriptor)
 {
     m_serverSocket = new QTcpSocket();
     m_serverSocket->setSocketDescriptor(socketDescriptor);
-    connect(m_serverSocket, &QTcpSocket::readyRead, this, &Server::slotReadyReadServer);
+    connect(m_serverSocket, &QTcpSocket::readyRead, this, &Server::slotReadyRead);
     Sockets.push_back(m_serverSocket);
     sendToClient("hi");
     qDebug() << "client connected";
 
 }
 
-void Server::slotReadyReadServer()
+void Server::slotReadyRead()
 {
     QByteArray buffer;
 
@@ -75,7 +75,7 @@ void Server::slotReadyReadServer()
     //    }
 }
 
-void Server::slotReadyReadClient()
+void Server::slotReady()
 {QByteArray buffer;
 
     QDataStream socketStream(m_clientSocket);
@@ -125,7 +125,7 @@ void Server::sendToServer()
 void Server::connectTo()
 {
     m_clientSocket = new QTcpSocket(this);
-    connect(m_clientSocket, &QTcpSocket::readyRead, this, &Server::slotReadyReadClient);
+    connect(m_clientSocket, &QTcpSocket::readyRead, this, &Server::slotReady);
     //connect(m_socket, &QTcpSocket::readyRead, this, &Client::slotReadyRead);
     m_clientSocket->connectToHost(QHostAddress::LocalHost, 6002);
     if(m_clientSocket->waitForConnected())

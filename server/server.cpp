@@ -3,7 +3,7 @@
 
 Server::Server(int port, QString ip) : m_port{port}, m_ip{ip}
 {
-    if (this->listen(QHostAddress::Any, 6000))
+    if (this->listen(QHostAddress::Any, 6002))
     {
         qDebug() << "start";
     }
@@ -15,11 +15,16 @@ Server::Server(int port, QString ip) : m_port{port}, m_ip{ip}
 
 void Server::sendToClient(QString str)
 {
+
     m_data.clear();
     QDataStream out(&m_data, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_9);
     out << str;
     m_serverSocket->write(m_data);
+    if (m_serverSocket->waitForReadyRead())
+    {
+        qDebug("read");
+    }
 }
 
 void Server::incomingConnection(qintptr socketDescriptor)
@@ -28,6 +33,7 @@ void Server::incomingConnection(qintptr socketDescriptor)
     m_serverSocket->setSocketDescriptor(socketDescriptor);
     connect(m_serverSocket, &QTcpSocket::readyRead, this, &Server::slotReadyRead);
     Sockets.push_back(m_serverSocket);
+    sendToClient("hi");
     qDebug() << "client connected";
 
 }

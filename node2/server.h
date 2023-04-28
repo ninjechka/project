@@ -26,11 +26,13 @@ private:
     int m_port;
 public slots:
     void incomingConnection(qintptr socketDescriptor);
-    void slotReadyReadServer();
-    void slotReadyReadClient();
+    void slotReadyRead();
+    void slotReady();
 
 private:
     QTcpServer* m_server;
+    QSet<QTcpSocket*> connection_set;
+
 };
 
 #endif // SERVER_H

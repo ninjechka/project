@@ -9,7 +9,6 @@ CONFIG -= app_bundle
 
 SOURCES += \
         main.cpp \
-        retranslator.cpp \
         server.cpp
 
 # Default rules for deployment.
@@ -18,5 +17,4 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    retranslator.h \
     server.h
