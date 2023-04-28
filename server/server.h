@@ -27,19 +27,7 @@ private:
 public slots:
     void incomingConnection(qintptr socketDescriptor);
     void slotReadyRead();
-signals:
-    void newMessage(QString);
-private slots:
-    void newConnection();
-    void appendToSocketList(QTcpSocket* socket);
 
-    void readSocket();
-    void discardSocket();
-    void displayError(QAbstractSocket::SocketError socketError);
-
-    void displayMessage(const QString& str);
-    void sendMessage(QTcpSocket* socket);
-    void sendAttachment(QTcpSocket* socket, QString filePath);
 private:
     QTcpServer* m_server;
     QSet<QTcpSocket*> connection_set;
