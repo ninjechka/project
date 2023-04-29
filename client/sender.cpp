@@ -1,21 +1,21 @@
-#include "client.h"
+#include "sender.h"
 
 #include <QDataStream>
 #include <QHostAddress>
 
-Client::Client()
+Sender::Sender()
 {
     m_socket = new QTcpSocket(this);
-    connect(m_socket, &QTcpSocket::readyRead, this, &Client::slotReadyRead);
+    connect(m_socket, &QTcpSocket::readyRead, this, &Sender::slotReadyRead);
     //connect(m_socket, &QTcpSocket::readyRead, this, &Client::slotReadyRead);
-    m_socket->connectToHost(QHostAddress::LocalHost, 6002);
+    m_socket->connectToHost(QHostAddress::LocalHost, 6001);
     if(m_socket->waitForConnected())
         qDebug() << "Connected to Server";
     else
         qDebug() << "error";
 }
 
-void Client::sendToServer()
+void Sender::sendToServer()
 {
     if(m_socket)
     {
@@ -38,12 +38,12 @@ void Client::sendToServer()
         qDebug() << "Not connected";
 }
 
-void Client::connectTo()
+void Sender::connectTo()
 {
 
 }
 
-void Client::slotReadyRead()
+void Sender::slotReadyRead()
 {
     QByteArray buffer;
 
@@ -65,5 +65,5 @@ void Client::slotReadyRead()
         QString message = QString("%1 :: %2").arg(m_socket->socketDescriptor()).arg(QString::fromStdString(buffer.toStdString()));
         qDebug() << message;
 
-   // sendToServer();
+    sendToServer();
 }

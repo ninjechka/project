@@ -5,12 +5,12 @@
 #include <QTcpSocket>
 #include <QObject>
 
-class Server : public QTcpServer
+class Receiver : public QTcpServer
 {
     Q_OBJECT
 
 public:
-    Server(int port, QString ip);
+    Receiver(int port, QString ip);
 
 private:
     QTcpSocket* m_clientSocket;

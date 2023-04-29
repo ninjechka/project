@@ -1,10 +1,10 @@
-#include "client.h"
+#include "sender.h"
 
 #include <QCoreApplication>
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-    Client client;
+    Sender client;
     return a.exec();
 }

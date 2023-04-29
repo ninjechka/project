@@ -5,11 +5,11 @@
 #include <QObject>
 #include <server.h>
 
-class Retranslator //: public Server
+class Retranslator : public Server
 {
     //Q_OBJECT
 public:
-    Retranslator();
+    Retranslator(int port, String ip);
 
 private:
     int port;

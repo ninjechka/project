@@ -1,14 +1,14 @@
-#ifndef CLIENT_H
-#define CLIENT_H
+#ifndef SENDER_H
+#define SENDER_H
 
 #include <QObject>
 #include <QTcpSocket>
 
-class Client : public QObject
+class Sender : public QObject
 {
     Q_OBJECT
 public:
-    Client();
+    Sender();
 
 private:
     QTcpSocket* m_socket;
@@ -20,4 +20,4 @@ public slots:
     void slotReadyRead();
 };
 
-#endif // CLIENT_H
+#endif // SENDER_H

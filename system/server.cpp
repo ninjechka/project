@@ -2,7 +2,7 @@
 #include <QDataStream>
 #include <QTimer>
 
-Server::Server(int port, QString ip) : m_port{port}, m_ip{ip}
+Receiver::Receiver(int port, QString ip) : m_port{port}, m_ip{ip}
 {
     if (this->listen(QHostAddress::Any, 6001))
     {
@@ -14,11 +14,11 @@ Server::Server(int port, QString ip) : m_port{port}, m_ip{ip}
     }
     QTimer* timer = new QTimer();
     timer->start(10000);
-     connect(timer, &QTimer::timeout, this, &Server::connectTo);
+     connect(timer, &QTimer::timeout, this, &Receiver::connectTo);
    // connectTo();
 }
 
-void Server::sendToClient(QString str)
+void Receiver::sendToClient(QString str)
 {
     m_data.clear();
     QDataStream out(&m_data, QIODevice::WriteOnly);
@@ -27,18 +27,18 @@ void Server::sendToClient(QString str)
     m_serverSocket->write(m_data);
 }
 
-void Server::incomingConnection(qintptr socketDescriptor)
+void Receiver::incomingConnection(qintptr socketDescriptor)
 {
     m_serverSocket = new QTcpSocket();
     m_serverSocket->setSocketDescriptor(socketDescriptor);
-    connect(m_serverSocket, &QTcpSocket::readyRead, this, &Server::slotReadyReadServer);
+    connect(m_serverSocket, &QTcpSocket::readyRead, this, &Receiver::slotReadyReadServer);
     Sockets.push_back(m_serverSocket);
     sendToClient("hi");
     qDebug() << "client connected";
 
 }
 
-void Server::slotReadyReadServer()
+void Receiver::slotReadyReadServer()
 {
     QByteArray buffer;
 
@@ -75,7 +75,7 @@ void Server::slotReadyReadServer()
     //    }
 }
 
-void Server::slotReadyReadClient()
+void Receiver::slotReadyReadClient()
 {QByteArray buffer;
 
     QDataStream socketStream(m_clientSocket);
@@ -99,7 +99,7 @@ void Server::slotReadyReadClient()
 
 }
 
-void Server::sendToServer()
+void Receiver::sendToServer()
 {
     if(m_clientSocket)
     {
@@ -122,10 +122,10 @@ void Server::sendToServer()
         qDebug() << "Not connected";
 }
 
-void Server::connectTo()
+void Receiver::connectTo()
 {
     m_clientSocket = new QTcpSocket(this);
-    connect(m_clientSocket, &QTcpSocket::readyRead, this, &Server::slotReadyReadClient);
+    connect(m_clientSocket, &QTcpSocket::readyRead, this, &Receiver::slotReadyReadClient);
     //connect(m_socket, &QTcpSocket::readyRead, this, &Client::slotReadyRead);
     m_clientSocket->connectToHost(QHostAddress::LocalHost, 6002);
     if(m_clientSocket->waitForConnected())
