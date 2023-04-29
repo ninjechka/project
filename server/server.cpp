@@ -1,76 +1,51 @@
 #include "server.h"
-#include <QDataStream>
 
-Server::Server(int port, QString ip) : m_port{port}, m_ip{ip}
+Server::Server()
 {
-    if (this->listen(QHostAddress::Any, 6002))
-    {
-        qDebug() << "start";
+    if(this->listen(QHostAddress::Any, 2324)){
+    qDebug() << "start";
     }
     else
     {
-        qDebug() << "error";
+        qDebug() << "error server";
     }
 }
-
-void Server::sendToClient(QString str)
-{
-
-    m_data.clear();
-    QDataStream out(&m_data, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_9);
-    out << str;
-    m_serverSocket->write(m_data);
-    if (m_serverSocket->waitForReadyRead())
-    {
-        qDebug("read");
-    }
-}
-
 void Server::incomingConnection(qintptr socketDescriptor)
 {
-    m_serverSocket = new QTcpSocket();
-    m_serverSocket->setSocketDescriptor(socketDescriptor);
-    connect(m_serverSocket, &QTcpSocket::readyRead, this, &Server::slotReadyRead);
-    Sockets.push_back(m_serverSocket);
-    sendToClient("hi");
-    qDebug() << "client connected";
+    socket = new QTcpSocket;
+    socket-> setSocketDescriptor(socketDescriptor);
+    connect (socket, &QTcpSocket::readyRead, this, &Server::slotReadyRead);
+    connect (socket, &QTcpSocket::disconnected, socket, &QTcpSocket::deleteLater);
+
+    Sockets.push_back(socket);
+    qDebug() << "client connected" << socketDescriptor;
 
 }
-
 void Server::slotReadyRead()
 {
-    QByteArray buffer;
-
-    QDataStream socketStream(m_serverSocket);
-    socketStream.setVersion(QDataStream::Qt_5_9);
-    socketStream.startTransaction();
-    socketStream >> buffer;
-    if(!socketStream.commitTransaction())
+    socket = (QTcpSocket*)sender();
+    QDataStream in(socket);
+    in.setVersion(QDataStream::Qt_6_2);
+    if(in.status() == QDataStream::Ok)
     {
-        QString message = QString("%1 :: Waiting for more data to come..").arg(m_serverSocket->socketDescriptor());
-        qDebug() << message;
+        qDebug() << "Server read...";
+        QString str;
+        in >> str;
+        qDebug() << str;
+        QString reportC = "message accepted from Server";
+        SendToClient(reportC);
     }
-    QString header = buffer.mid(0,128);
-    QString fileType = header.split(",")[0].split(":")[1];
-    buffer = buffer.mid(128);
+    else
+    {
+        qDebug() << "DataStream error";
+    }
+}
+void Server::SendToClient(QString str)
+{
+    Data.clear();
+    QDataStream out (&Data, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_6_2);
+    out << str;
+    socket->write(Data);
 
-    if(fileType=="message"){
-        QString message = QString("%1 :: %2").arg(m_serverSocket->socketDescriptor()).arg(QString::fromStdString(buffer.toStdString()));
-        qDebug() << message;
-    }
-//    m_serverSocket = reinterpret_cast<QTcpSocket*>(sender());
-//    QDataStream in(m_serverSocket);
-//    in.setVersion(QDataStream::Qt_5_9);
-//    if(in.status() == QDataStream::Ok)
-//    {
-//        qDebug() <<"read...";
-//        QString str;
-//        in>>str;
-//        qDebug() << str;
-//    }
-//    else
-//    {
-//        qDebug() << "DataStream error";
-//    }
 }

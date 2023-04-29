@@ -1,10 +1,14 @@
-#include "server.h"
-
 #include <QCoreApplication>
-
+#include <server.h>
+#include <client.h>
+#include <resiver.h>
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-    Server server(6000, "127:0:0:1");
+    Server s;
+    Resiver r;
+    Client c;
+   // QString message = "test";
+   // c.sendToServer(message);
     return a.exec();
 }

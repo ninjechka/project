@@ -1,31 +1,22 @@
 #ifndef SERVER_H
 #define SERVER_H
-
 #include <QTcpServer>
 #include <QTcpSocket>
-#include <QObject>
-
+#include <QVector>
 class Server : public QTcpServer
 {
     Q_OBJECT
-
 public:
-    Server(int port, QString ip);
+    Server();
+    QTcpSocket *socket;
 
 private:
-    QTcpSocket* m_serverSocket;
-    QByteArray m_data;
-    void sendToClient(QString str);
-
-    QVector<QTcpSocket*> m_sockets;
-    QString m_ip;
-    int m_port;
+    QVector <QTcpSocket*> Sockets;
+    QByteArray Data;
+    void SendToClient(QString str);
 public slots:
     void incomingConnection(qintptr socketDescriptor);
     void slotReadyRead();
-
-private:
-    QTcpServer* m_server;
 };
 
 #endif // SERVER_H
