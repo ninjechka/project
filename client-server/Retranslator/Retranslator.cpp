@@ -31,17 +31,20 @@ void Retranslator::slotReady()
     in.setVersion(QDataStream::Qt_5_9);
     if(in.status() == QDataStream::Ok)
     {
-        qDebug() << "Client-Resiver read...";
         QString str;
         in >> str;
-        QStringList args = str.split('_');
-        QStringList from = args.at(args.size() - 1).split(":");
-        int s = listenTo[qMakePair(from.at(0), from.at(1).toInt())];
-         QString st = "-" + ip + ":" + QString::number(port) + "-" + QString::number(s) + "_" + ip + ":" + QString::number(port);
-        str.append(st);
-        qDebug() << str;
-        SendToClient(str);
-
+        QString command = str.split('#').at(0);
+        if (command == QString::number(sendGraph))
+        {
+            str = str.split('#').at(1);
+            QStringList args = str.split('_');
+            QStringList from = args.at(args.size() - 1).split(":");
+            int s = listenTo[qMakePair(from.at(0), from.at(1).toInt())];
+             QString st = "-" + ip + ":" + QString::number(port) + "-" + QString::number(s) + "_" + ip + ":" + QString::number(port);
+            str.append(st);
+            qDebug() << str;
+            SendToClient(str);
+        }
     }
     else
     {
@@ -68,15 +71,12 @@ void Retranslator::slotReadyRead()
     in.setVersion(QDataStream::Qt_5_9);
     if(in.status() == QDataStream::Ok)
     {
-
-        qDebug() << "Resiver read...";
         QString str;
         in >> str;
         qDebug() << str;
         if (str == QString::number(getGraph))
         {
-            QString reportC = "sender want to get graph";
-            QTextStream cout (stdout);
+
             //SendToClient("told to receiver about this");
             sendToServer(QString::number(getGraph));
         }

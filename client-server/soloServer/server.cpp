@@ -30,13 +30,12 @@ void Server::slotReadyRead()
     in.setVersion(QDataStream::Qt_5_9);
     if(in.status() == QDataStream::Ok)
     {
-        qDebug() << "Server read...";
         QString str;
         in >> str;
         qDebug() << str;
         if (str == QString::number(getGraph))
         {
-            QString st = ip + ":" + QString::number(port);
+            QString st = QString::number(sendGraph) + "#" + ip + ":" + QString::number(port);
             SendToClient(st);
         }
     }

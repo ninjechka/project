@@ -11,12 +11,9 @@ Client::Client(){
         connect (m_socket, &QTcpSocket::readyRead, this, &Client::slotReadyRead);
         m_socket->connectToHost(node.first, node.second);
         if(m_socket->waitForConnected())
-        {
             qDebug() << "Connected to Server";
-        }
-        else {
+        else
             qDebug() << "error connect";
-        }
         QString message = QString::number(getGraph);;
         sendToServer(message);
     }
@@ -33,14 +30,20 @@ void Client::slotReadyRead()
         QString str;
         in >> str;
         qDebug() << str;
-        QStringList args;
-        args = str.split("_");
-        for (int i = 0; i < args.size() - 1; ++i) {
-            QStringList pair =  args.at(i).split("-");
-            graph[qMakePair(pair.at(0), pair.at(1))] =  pair.at(2).toInt();
+        QString command = str.split('#').at(0);
+        if (command == QString::number(sendGraph))
+        {
+            str = str.split('#').at(1);
+            QStringList args;
+            args = str.split("_");
+            for (int i = 0; i < args.size() - 1; ++i) {
+                QStringList pair =  args.at(i).split("-");
+                graph[qMakePair(pair.at(0), pair.at(1))] =  pair.at(2).toInt();
+            }
+            QStringList pair = args.at(args.size() - 1).split(":");
+            graph[qMakePair(args.at(args.size() - 1), ip)] =  listenTo[qMakePair(pair.at(0), pair.at(1).toInt())];
         }
-        QStringList pair = args.at(args.size() - 1).split(":");
-        graph[qMakePair(args.at(args.size() - 1), ip)] =  listenTo[qMakePair(pair.at(0), pair.at(1).toInt())];
+
     }
     else
     {

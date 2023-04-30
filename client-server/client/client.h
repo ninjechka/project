@@ -20,6 +20,7 @@ private:
         isAllConnect
     };
 
+    bool waitGraph = false;
     QMap<QPair<QString, int>, int> listenTo;
     QMap<QPair<QString, QString>, int> graph;
     QTcpSocket* m_socket;

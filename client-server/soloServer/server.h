@@ -9,10 +9,7 @@ class Server : public QTcpServer
 public:
     Server();
     QTcpSocket *socket;
-    std::map <quint16, quint16> ports = {{2323, 2323},
-                                         {2324,2324},
-                                         {2325,2325}};
-    int port = 2324;
+    int port;
     QString ip;
 private:
     enum Commands {

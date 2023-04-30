@@ -23,16 +23,18 @@ private:
         sendGraph,
         isAllConnect
     };
+
     QVector <QTcpSocket*> rS_Sockets;
     QByteArray Data;
     void SendToClient(QString str);
 
-    QMap<QPair<QString, int>, int> listenTo;
-    void readFile();
     QTcpSocket* rC_socket;
     QByteArray rC_data;
+    QMap<QPair<QString, int>, int> listenTo;
+    void readFile();
     void sendToServer(QString str);
     void connectTo();
+
 public slots:
     void incomingConnection(qintptr socketDescriptor);
     void slotReadyRead();
