@@ -30,7 +30,7 @@ private:
     void readFile();
     void sendToServer(QString str);
     void connectTo();
-
+    QString getBestPath();
     void sendPackageToServer();
 
 public slots:

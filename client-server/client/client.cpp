@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QRandom.h>
 #include <QTime>
+#include <QQueue>
 
 Client::Client(){
     readFile();
@@ -41,10 +42,11 @@ void Client::slotReadyRead()
             args = str.split("_");
             for (int i = 0; i < args.size() - 1; ++i) {
                 QStringList pair =  args.at(i).split("-");
-                graph[qMakePair(pair.at(0), pair.at(1))] =  pair.at(2).toInt();
+                graph[qMakePair(pair.at(1), pair.at(0))] =  pair.at(2).toInt();
             }
             QStringList pair = args.at(args.size() - 1).split(":");
-            graph[qMakePair(args.at(args.size() - 1), ip)] =  listenTo[qMakePair(pair.at(0), pair.at(1).toInt())];
+            graph[qMakePair(ip, args.at(args.size() - 1))] =  listenTo[qMakePair(pair.at(0), pair.at(1).toInt())];
+            qDebug() <<  getBestPath();
         }
         sendPackageToServer();
     }
@@ -63,11 +65,12 @@ void Client::sendToServer(QString str)
     m_socket->write(m_data);
 }
 
+
 void Client::sendPackageToServer()
 {
     QString package = generatePackage() + "_" +QTime::currentTime().toString();
-    QString path = "127.0.0.1:2323#127.0.0.1:2324";
-    QString message = QString::number(sendPackage) +'#' + path + '#' + package;
+    QString path = getBestPath();
+    QString message = QString::number(sendPackage) + path + '#' + package;
     sendToServer(message);
 }
 
@@ -98,4 +101,57 @@ QString Client::generatePackage()
 {
     QString package = QString::number(qrand() % 50) + QString::number(qrand() % 50) + QString::number(qrand() % 50);
     return package;
+}
+
+QString Client::getBestPath()
+{
+    QMap<QString, int> dist;
+    for (auto node: graph.keys())
+    {
+        if (!dist.contains(node.first))
+            dist[node.first] = INT_MAX;
+        if (!dist.contains(node.second))
+            dist[node.second] = INT_MAX;
+    }
+
+    QString s = ip;
+    QString t = "127.0.0.1:2324";
+    dist[s] = 0;
+    QMap<QString, QString> p;
+    p[s] = "";
+    QQueue<QString> q;
+    q.push_back(ip);
+    QVector<QString> adj;
+    while (!q.empty()) {
+        QString v = q.front();
+        q.pop_front();
+        for (auto node: graph.keys()) {
+            if (node.first == v)
+                adj.append(node.second);
+        }
+        for (QString u : adj) {
+            if (dist[u] > dist[v] + graph[qMakePair(v, u)]) {
+                p[u] = v;
+                dist[u] = dist[v] + graph[qMakePair(v, u)];
+                q.push_back(u);
+            }
+        }
+        adj.clear();
+    }
+
+    if (dist[t] == INT_MAX)
+        return "";
+
+    QVector<QString> path;
+    while (t != "")
+    {
+        path.push_back(t);
+        t = p[t];
+    }
+
+    QString strPath = "";
+    for (int i = path.size() - 2; i > 0; --i)
+        strPath += "#" + path.at(i);
+    strPath += "#127.0.0.1:2324";
+    return strPath;
 }

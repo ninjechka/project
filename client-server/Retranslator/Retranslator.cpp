@@ -31,14 +31,14 @@ void Retranslator::slotReady()
     {
         QString str;
         in >> str;
+        qDebug() << str;
         QString command = str.split('#').at(0);
         if (command == QString::number(sendGraph))
         {
-            str = str.split('#').at(1);
-            QStringList args = str.split('_');
+            QStringList args = str.split('#').at(1).split('_');
             QStringList from = args.at(args.size() - 1).split(":");
             int s = listenTo[qMakePair(from.at(0), from.at(1).toInt())];
-             QString st = "-" + id + "-" + QString::number(s) + "_" + id;
+            QString st = "-" + id + "-" + QString::number(s) + "_" + id;
             str.append(st);
             qDebug() << str;
             SendToClient(str);
