@@ -2,6 +2,8 @@
 #include <QDataStream>
 #include <QHostAddress>
 #include <QFile>
+#include <QRandom.h>
+#include <QTime>
 
 Client::Client(){
     readFile();
@@ -14,7 +16,7 @@ Client::Client(){
             qDebug() << "Connected to Server";
         else
             qDebug() << "error connect";
-        QString message = QString::number(getGraph);;
+        QString message = QString::number(getGraph);
         sendToServer(message);
     }
 }
@@ -30,6 +32,7 @@ void Client::slotReadyRead()
         QString str;
         in >> str;
         qDebug() << str;
+
         QString command = str.split('#').at(0);
         if (command == QString::number(sendGraph))
         {
@@ -43,7 +46,7 @@ void Client::slotReadyRead()
             QStringList pair = args.at(args.size() - 1).split(":");
             graph[qMakePair(args.at(args.size() - 1), ip)] =  listenTo[qMakePair(pair.at(0), pair.at(1).toInt())];
         }
-
+        sendPackageToServer();
     }
     else
     {
@@ -58,7 +61,14 @@ void Client::sendToServer(QString str)
     out.setVersion(QDataStream::Qt_5_9);
     out << str;
     m_socket->write(m_data);
+}
 
+void Client::sendPackageToServer()
+{
+    QString package = generatePackage() + "_" +QTime::currentTime().toString();
+    QString path = "127.0.0.1:2323#127.0.0.1:2324";
+    QString message = QString::number(sendPackage) +'#' + path + '#' + package;
+    sendToServer(message);
 }
 
 void Client::readFile()
@@ -82,4 +92,10 @@ void Client::readFile()
     }
 
     file.close();
+}
+
+QString Client::generatePackage()
+{
+    QString package = QString::number(qrand() % 50) + QString::number(qrand() % 50) + QString::number(qrand() % 50);
+    return package;
 }

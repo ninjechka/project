@@ -12,16 +12,16 @@ public:
     Retranslator(QString argFile);
     QTcpSocket *rS_socket;
 
-
 private:
     int port;
     QString ip;
     QString argsFile;
+    QString id;
 
     enum Commands {
         getGraph,
         sendGraph,
-        isAllConnect
+        sendPackage
     };
 
     QVector <QTcpSocket*> rS_Sockets;

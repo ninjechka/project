@@ -15,7 +15,7 @@ private:
     enum Commands {
         getGraph,
         sendGraph,
-        isAllConnect
+        sendPackage
     };
     QVector <QTcpSocket*> Sockets;
     QByteArray Data;

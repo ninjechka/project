@@ -6,13 +6,11 @@
 Retranslator::Retranslator(QString argFile) : argsFile(argFile)
 {
     readFile();
-    if(this->listen(QHostAddress::Any, port)){
+    if(this->listen(QHostAddress::Any, port))
         qDebug() << "start";
-    }
     else
-    {
         qDebug() << "error resiver";
-    }
+
     for (auto node: listenTo.keys()) {
         rC_socket = new QTcpSocket(this);
         connect (rC_socket, &QTcpSocket::readyRead, this, &Retranslator::slotReady);
@@ -40,11 +38,12 @@ void Retranslator::slotReady()
             QStringList args = str.split('_');
             QStringList from = args.at(args.size() - 1).split(":");
             int s = listenTo[qMakePair(from.at(0), from.at(1).toInt())];
-             QString st = "-" + ip + ":" + QString::number(port) + "-" + QString::number(s) + "_" + ip + ":" + QString::number(port);
+             QString st = "-" + id + "-" + QString::number(s) + "_" + id;
             str.append(st);
             qDebug() << str;
             SendToClient(str);
         }
+
     }
     else
     {
@@ -74,11 +73,26 @@ void Retranslator::slotReadyRead()
         QString str;
         in >> str;
         qDebug() << str;
-        if (str == QString::number(getGraph))
+        QString command = str.split('#').at(0);
+        if (command == QString::number(getGraph))
         {
 
             //SendToClient("told to receiver about this");
             sendToServer(QString::number(getGraph));
+        }
+        if (command == QString::number(sendPackage))
+        {
+            QStringList args = str.split('#');
+
+            if (args.at(1) == id)
+            {
+                str = QString::number(sendPackage);
+                for (int i = 2; i < args.size(); ++i) {
+                    str = "#" + args[i];
+                }
+                qDebug() << str;
+                sendToServer(str);
+            }
         }
     }
     else
@@ -117,6 +131,7 @@ void Retranslator::readFile()
     if(line != "\n"){
         port = line.split(" ").at(1).toInt();
         ip = line.split(" ").at(0);
+        id = line.split(" ").at(0) + ":" +line.split(" ").at(1);
         line = in.readLine();
         int count = line.toInt();
         for (int var = 0; var < count; ++var) {
@@ -125,6 +140,5 @@ void Retranslator::readFile()
             listenTo[qMakePair(args[0], args[1].toInt())] = args[2].toInt();
         }
     }
-
     file.close();
 }

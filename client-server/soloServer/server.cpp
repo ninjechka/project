@@ -33,10 +33,17 @@ void Server::slotReadyRead()
         QString str;
         in >> str;
         qDebug() << str;
-        if (str == QString::number(getGraph))
+        QString command = str.split('#').at(0);
+        if (command == QString::number(getGraph))
         {
             QString st = QString::number(sendGraph) + "#" + ip + ":" + QString::number(port);
+            qDebug() << st;
             SendToClient(st);
+        }
+        if (command == QString::number(sendPackage))
+        {
+            QStringList args = str.split('#');
+            qDebug() << args.at(1);
         }
     }
     else
