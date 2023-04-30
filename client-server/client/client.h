@@ -21,7 +21,7 @@ private:
     };
 
     QMap<QPair<QString, int>, int> listenTo;
-    QVector<QPair<QString, QString>> graph;
+    QMap<QPair<QString, QString>, int> graph;
     QTcpSocket* m_socket;
     QByteArray m_data;
 

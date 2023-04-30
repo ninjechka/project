@@ -30,23 +30,17 @@ void Client::slotReadyRead()
     in.setVersion(QDataStream::Qt_5_9);
     if(in.status() == QDataStream::Ok)
     {
-        qDebug() << "Client read...";
         QString str;
         in >> str;
         qDebug() << str;
         QStringList args;
-        args = str.split(" ");
-        qDebug() <<  args.size();//args.at(0);
-//        if (args.at(0) == "101")
-//        {
-//            for (int i = 1; i < args.size() - 1; i++)
-//            {
-//                QStringList pair =  args.at(i).split("-");
-//                graph.append(qMakePair(pair.at(0), pair.at(1)));
-
-//            }
-//        }
-//        qDebug() <<  graph.size();
+        args = str.split("_");
+        for (int i = 0; i < args.size() - 1; ++i) {
+            QStringList pair =  args.at(i).split("-");
+            graph[qMakePair(pair.at(0), pair.at(1))] =  pair.at(2).toInt();
+        }
+        QStringList pair = args.at(args.size() - 1).split(":");
+        graph[qMakePair(args.at(args.size() - 1), ip)] =  listenTo[qMakePair(pair.at(0), pair.at(1).toInt())];
     }
     else
     {
