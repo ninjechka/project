@@ -1,6 +1,7 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 #include <QObject>
+#include <QString>
 #include <QTcpSocket>
 #include <QVector>
 
@@ -10,10 +11,21 @@ class Client : public QObject
     Q_OBJECT
 public:
     Client();
-    QVector <quint16> ports = {2323, 2325};
+
 private:
+     QString ip;
+    enum Commands {
+        getGraph,
+        sendGraph,
+        isAllConnect
+    };
+
+    QMap<QPair<QString, int>, int> listenTo;
+    QVector<QPair<QString, QString>> graph;
     QTcpSocket* m_socket;
     QByteArray m_data;
+
+    void readFile();
     void sendToServer(QString str);
     void connectTo();
 

@@ -1,19 +1,21 @@
 #include "server.h"
+#include <QDataStream>
+#include <QFile>
 
 Server::Server()
 {
-    if(this->listen(QHostAddress::Any, 2324)){
-    qDebug() << "start";
-    }
+    readFile();
+    if(this->listen(QHostAddress::Any, 2324))
+        qDebug() << "start";
     else
-    {
         qDebug() << "error server";
-    }
 }
+
+
 void Server::incomingConnection(qintptr socketDescriptor)
 {
     socket = new QTcpSocket;
-    socket-> setSocketDescriptor(socketDescriptor);
+    socket->setSocketDescriptor(socketDescriptor);
     connect (socket, &QTcpSocket::readyRead, this, &Server::slotReadyRead);
     connect (socket, &QTcpSocket::disconnected, socket, &QTcpSocket::deleteLater);
 
@@ -25,15 +27,18 @@ void Server::slotReadyRead()
 {
     socket = (QTcpSocket*)sender();
     QDataStream in(socket);
-    in.setVersion(QDataStream::Qt_6_2);
+    in.setVersion(QDataStream::Qt_5_9);
     if(in.status() == QDataStream::Ok)
     {
         qDebug() << "Server read...";
         QString str;
         in >> str;
         qDebug() << str;
-        QString reportC = "message accepted from Server";
-        SendToClient(reportC);
+        if (str == QString::number(getGraph))
+        {
+            QString st = ip + ":" + QString::number(port);
+            SendToClient(st);
+        }
     }
     else
     {
@@ -44,8 +49,23 @@ void Server::SendToClient(QString str)
 {
     Data.clear();
     QDataStream out (&Data, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_6_2);
+    out.setVersion(QDataStream::Qt_5_9);
     out << str;
     socket->write(Data);
 
+}
+
+void Server::readFile()
+{
+    QFile file("node.txt");
+    QString data;
+    if (!file.open(QIODevice::ReadOnly))
+        qDebug() << "error open file";
+    QTextStream in(&file);
+    QString line = in.readLine();
+    if(line != "\n"){
+        port = line.split(" ").at(1).toInt();
+        ip = line.split(" ").at(0);
+    }
+    file.close();
 }

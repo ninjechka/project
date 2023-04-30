@@ -11,14 +11,23 @@ class Resiver : public QTcpServer
 public:
     Resiver();
     QTcpSocket *rS_socket;
-    quint16 port = 2324;
-    std::map <quint16, quint16> ports = {{2323, 2323}};
+
 
 private:
+    int port;
+    QString ip;
+
+    enum Commands {
+        getGraph,
+        sendGraph,
+        isAllConnect
+    };
     QVector <QTcpSocket*> rS_Sockets;
     QByteArray Data;
     void SendToClient(QString str);
 
+    QMap<QPair<QString, int>, int> listenTo;
+    void readFile();
     QTcpSocket* rC_socket;
     QByteArray rC_data;
     void sendToServer(QString str);

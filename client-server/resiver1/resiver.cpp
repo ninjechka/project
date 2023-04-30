@@ -1,58 +1,44 @@
-
+#include <QDataStream>
 #include <resiver.h>
 #include <QTextStream>
+#include <QFile>
 
 Resiver::Resiver()
 {
-    if(this->listen(QHostAddress::Any, 2323)){
-    qDebug() << "start";
+    readFile();
+    if(this->listen(QHostAddress::Any, port)){
+        qDebug() << "start";
     }
     else
     {
         qDebug() << "error resiver";
     }
+    for (auto node: listenTo.keys()) {
+        rC_socket = new QTcpSocket(this);
+        connect (rC_socket, &QTcpSocket::readyRead, this, &Resiver::slotReady);
+        rC_socket->connectToHost(node.first, node.second);
 
-    rC_socket = new QTcpSocket(this);
-    connect (rC_socket, &QTcpSocket::readyRead, this, &Resiver::slotReady);
-    rC_socket->connectToHost(QHostAddress::LocalHost, 2324);
-    if(rC_socket->waitForConnected())
-    {
-        qDebug() << "Connected to Resiver";
-    }
-    else {
-        qDebug() << "error resiver";
+        if(rC_socket->waitForConnected())
+            qDebug() << "Connected to receiver";
+        else
+            qDebug() << "error resiver";
     }
 }
 void Resiver::slotReady()
 {
-    /*QByteArray buffer;
-
-    QDataStream socketStream(rC_socket);
-    socketStream.setVersion(QDataStream::Qt_5_9);
-    socketStream.startTransaction();
-    socketStream >> buffer;
-    if(!socketStream.commitTransaction())
-    {
-        QString message = QString("INFO :: Attachment from sd:%1 discarded").arg(rC_socket->socketDescriptor());
-        qDebug() << "Waiting for more data to come.. " << message;;
-        return;
-    }
-    QString header = buffer.mid(0,128);
-    QString fileType = header.split(",")[0].split(":")[1];
-    buffer = buffer.mid(128);
-
-    if(fileType=="message"){
-        QString message = QString("%1 :: %2").arg(rC_socket->socketDescriptor()).arg(QString::fromStdString(buffer.toStdString()));
-        qDebug() << message;
-    }*/
     rC_socket = (QTcpSocket*)sender();
     QDataStream in(rC_socket);
-    in.setVersion(QDataStream::Qt_6_2);
+    in.setVersion(QDataStream::Qt_5_9);
     if(in.status() == QDataStream::Ok)
     {
         qDebug() << "Client-Resiver read...";
         QString str;
         in >> str;
+        QStringList args = str.split('_');
+        QStringList from = args.at(args.size() - 1).split(":");
+        int s = listenTo[qMakePair(from.at(0), from.at(1).toInt())];
+         QString st = "-" + ip + ":" + QString::number(port) + "-" + QString::number(s) + "_" + ip + ":" + QString::number(port);
+        str.append(st);
         qDebug() << str;
         SendToClient(str);
 
@@ -79,18 +65,21 @@ void Resiver::slotReadyRead()
 {
     rS_socket = (QTcpSocket*)sender();
     QDataStream in(rS_socket);
-    in.setVersion(QDataStream::Qt_6_2);
+    in.setVersion(QDataStream::Qt_5_9);
     if(in.status() == QDataStream::Ok)
     {
+
         qDebug() << "Resiver read...";
         QString str;
         in >> str;
         qDebug() << str;
-        QString reportC = "message accepted from Resiver";
-        QTextStream cout (stdout);
-        SendToClient(reportC);
-        sendToServer(str);
-
+        if (str == QString::number(getGraph))
+        {
+            QString reportC = "sender want to get graph";
+            QTextStream cout (stdout);
+            SendToClient("told to receiver about this");
+            sendToServer(QString::number(getGraph));
+        }
     }
     else
     {
@@ -101,15 +90,39 @@ void Resiver::SendToClient(QString str)
 {
     Data.clear();
     QDataStream out (&Data, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_6_2);
+    out.setVersion(QDataStream::Qt_5_9);
     out << str;
     rS_socket->write(Data);
 }
 void Resiver::sendToServer(QString str){
     rC_data.clear();
     QDataStream out (&rC_data, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_6_2);
+    out.setVersion(QDataStream::Qt_5_9);
     out << str;
     rC_socket->write(rC_data);
 
+}
+
+void Resiver::readFile()
+{
+    QFile file("node.txt");
+    QString data;
+    if (!file.open(QIODevice::ReadOnly))
+        qDebug() << "error";
+    QTextStream in(&file);
+
+    QString line = in.readLine();
+    if(line != "\n"){
+        port = line.split(" ").at(1).toInt();
+        ip = line.split(" ").at(0);
+        line = in.readLine();
+        int count = line.toInt();
+        for (int var = 0; var < count; ++var) {
+            data = in.readLine();
+            QStringList args = data.split(" ");
+            listenTo[qMakePair(args[0], args[1].toInt())] = args[2].toInt();
+        }
+    }
+
+    file.close();
 }
