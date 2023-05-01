@@ -9,11 +9,15 @@ class Server : public QTcpServer
 public:
     Server();
     QTcpSocket *socket;
-
+    std::map <quint16, quint16> ports = {{2323, 2323},
+                                         {2324,2324},
+                                         {2325,2325}};
+    quint16 port;
+    void SendToClient(QString str);
 private:
     QVector <QTcpSocket*> Sockets;
     QByteArray Data;
-    void SendToClient(QString str);
+
 public slots:
     void incomingConnection(qintptr socketDescriptor);
     void slotReadyRead();

@@ -5,6 +5,7 @@ Client::Client(){
    m_socket = new QTcpSocket(this);
    connect (m_socket, &QTcpSocket::readyRead, this, &Client::slotReadyRead);
    m_socket->connectToHost(QHostAddress::LocalHost, 2323);
+   //m_socket->connectToHost(QHostAddress::LocalHost, 2325);
    if(m_socket->waitForConnected())
    {
        qDebug() << "Connected to Server";
@@ -12,8 +13,20 @@ Client::Client(){
    else {
        qDebug() << "error";
    }
-   QString message = "12";
-   sendToServer(message);
+  /* QString message = "12";
+   sendToServer(message);*/
+}
+void Client::connectTo(){
+     m_socket->connectToHost(QHostAddress::LocalHost, 2323);
+     if(m_socket->waitForConnected())
+     {
+         qDebug() << "Connected to Server";
+     }
+     else {
+         qDebug() << "error";
+     }
+     QString message = "12";
+     sendToServer(message);
 }
 void Client::slotReadyRead()
 {

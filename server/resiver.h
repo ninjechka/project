@@ -1,16 +1,23 @@
 #ifndef RESIVER_H
 #define RESIVER_H
-#include <server.h>
-#include <client.h>
+
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QObject>
+#include <QMap>
 class Resiver : public QTcpServer
 {
     Q_OBJECT
 public:
     Resiver();
     QTcpSocket *rS_socket;
+    quint16 reincornatedPortTo = 2324;
+    quint16 reincornatedPortFrom = 2323;
+    quint16 portTo = 2324;
+    quint16 portFrom = 2323;
+    std::map <quint16, quint16> ports = {{2323, 2323}};
+    void killNode();
+    void reviveNode();
 
 private:
     QVector <QTcpSocket*> rS_Sockets;

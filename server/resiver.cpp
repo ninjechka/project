@@ -4,7 +4,7 @@
 
 Resiver::Resiver()
 {
-    if(this->listen(QHostAddress::Any, 2323)){
+    if(this->listen(QHostAddress::Any, portFrom)){
     qDebug() << "start";
     }
     else
@@ -17,11 +17,26 @@ Resiver::Resiver()
     rC_socket->connectToHost(QHostAddress::LocalHost, 2324);
     if(rC_socket->waitForConnected())
     {
-        qDebug() << "Connected to Server";
+        qDebug() << "Connected to Resiver";
     }
     else {
         qDebug() << "error resiver";
     }
+}
+void Resiver::killNode(){
+    rC_socket->disconnectFromHost();
+   // rC_socket = nullptr;
+    //portTo = 11111;
+   // rS_socket->disconnectFromHost();
+   // portFrom = 11111
+   // rS_socket = nullptr;
+    qDebug() << "nod off";
+}
+void Resiver::reviveNode(){
+    portTo = reincornatedPortTo;
+    portFrom = reincornatedPortFrom;
+    Resiver();
+    qDebug() << "nod On";
 }
 void Resiver::slotReady()
 {
