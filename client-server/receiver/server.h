@@ -9,6 +9,7 @@ class Server : public QTcpServer
 public:
     Server();
 
+    void disconnect();
 private:
     QTcpSocket* m_socket;
     int m_port;
@@ -19,7 +20,8 @@ private:
         getGraph,
         sendGraph,
         sendPackage,
-        getPackage
+        getPackage,
+        nodeDisconnected
     };
 
     QVector<QTcpSocket*> m_clientSockets;
