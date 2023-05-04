@@ -15,18 +15,21 @@ Client::Client(){
         m_socket = new QTcpSocket(this);
         connect (m_socket, &QTcpSocket::readyRead, this, &Client::slotReadyRead);
         m_socket->connectToHost(node.first, node.second);
-        m_socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
         if(m_socket->waitForConnected())
         {
             qDebug() << "Connected to retranslator";
-            m_serversSockets.append(m_socket);
-
+            m_sockets.append(m_socket);
+            m_socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+            connect(m_socket, &QAbstractSocket::errorOccurred, [this]
+            {
+                qDebug() << "Node disconnected";
+            });
         }
         else
         {
             qDebug() << "error connect";
             m_timer->start(5000);
-            //пытаемся переподключиться к узлу
+             //пытаемся переподключиться к узлу
             connect(m_timer, &QTimer::timeout, this, [this, node]() {
                 m_socket = new QTcpSocket(this);
                 connect (m_socket, &QTcpSocket::readyRead, this, &Client::slotReadyRead);
@@ -34,8 +37,7 @@ Client::Client(){
                 if(m_socket->waitForConnected()) {
                     m_timer->stop();
                     qDebug() << "Connected to retranslator";
-                    m_serversSockets.append(m_socket);
-
+                    m_sockets.append(m_socket);
                 }
             });
         }
@@ -63,6 +65,7 @@ void Client::slotReadyRead()
         QString str;
         in >> str;
         QString command = str.split('#').at(0);
+        qDebug() << command;
         if (command == QString::number(sendGraph))
         {
             str = str.split('#').at(1);
@@ -78,6 +81,11 @@ void Client::slotReadyRead()
         }
         if (command == QString::number(getPackage))
             sendPackageToServer();
+        if (command == QString::number(nodeDisconnected))
+        {
+            sendToServer(QString::number(getGraph));
+            qDebug() << "Node disconnected";
+        }
     }
     else
         qDebug() << "DataStream error";
@@ -85,13 +93,16 @@ void Client::slotReadyRead()
 
 void Client::sendToServer(QString str)
 {
-    for (auto socket : m_serversSockets)
+    for (auto socket : m_sockets)
     {
-        m_data.clear();
-        QDataStream out (&m_data, QIODevice::WriteOnly);
-        out.setVersion(QDataStream::Qt_5_9);
-        out << str;
-        socket->write(m_data);
+        if(socket)
+        {
+            m_data.clear();
+            QDataStream out (&m_data, QIODevice::WriteOnly);
+            out.setVersion(QDataStream::Qt_5_9);
+            out << str;
+            socket->write(m_data);
+        }
     }
 }
 
@@ -137,7 +148,6 @@ QString Client::getBestPath()
     QMap<QString, int> dist;
     for (auto node: m_graph.keys())
     {
-        qDebug() << node;
         if (!dist.contains(node.first))
             dist[node.first] = INT_MAX;
         if (!dist.contains(node.second))
@@ -184,4 +194,14 @@ QString Client::getBestPath()
         strPath += "#" + path.at(i);
     strPath += "#127.0.0.1:2324";
     return strPath;
+}
+
+void Client::disconnect(){
+    m_socket->disconnectFromHost();
+    if(m_socket->waitForDisconnected()){
+        qDebug() << "disconnected";
+    }
+    else{
+        qDebug() << "connected ploho";
+    }
 }
