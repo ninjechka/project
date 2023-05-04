@@ -17,11 +17,15 @@ void Server::incomingConnection(qintptr socketDescriptor)
     m_socket->setSocketDescriptor(socketDescriptor);
     connect (m_socket, &QTcpSocket::readyRead, this, &Server::slotReadyRead);
     connect (m_socket, &QTcpSocket::disconnected, m_socket, &QTcpSocket::deleteLater);
-
     m_clientSockets.push_back(m_socket);
     qDebug() << "client connected" << socketDescriptor;
-
+    m_socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+    connect(m_socket, &QAbstractSocket::errorOccurred, [this]
+    {
+        qDebug() << "Node disconnected";
+    });
 }
+
 
 void Server::slotReadyRead()
 {
@@ -49,6 +53,11 @@ void Server::slotReadyRead()
                 sendToClient(QString::number(getPackage));
             else qDebug() << "all data received";
         }
+        if (command == QString::number(nodeDisconnected))
+        {
+            sendToClient(QString::number(getGraph));
+            qDebug() << "Node disconnected";
+        }
     }
     else
         qDebug() << "DataStream error";
@@ -58,11 +67,14 @@ void Server::sendToClient(QString str)
 {
     for (auto socket : m_clientSockets)
     {
-        m_data.clear();
-        QDataStream out (&m_data, QIODevice::WriteOnly);
-        out.setVersion(QDataStream::Qt_5_9);
-        out << str;
-        socket->write(m_data);
+        if(socket)
+        {
+            m_data.clear();
+            QDataStream out (&m_data, QIODevice::WriteOnly);
+            out.setVersion(QDataStream::Qt_5_9);
+            out << str;
+            socket->write(m_data);
+        }
     }
 }
 
@@ -80,4 +92,16 @@ void Server::readFile()
         m_id = line.split(" ").at(0) + ":" +line.split(" ").at(1);
     }
     file.close();
+}
+
+void Server::disconnect(){
+    m_socket->disconnectFromHost();
+    connect (m_socket, &QTcpSocket::disconnected, m_socket, &QTcpSocket::deleteLater);
+    if(m_socket->state() == QAbstractSocket::UnconnectedState || m_socket->waitForDisconnected(1000)){
+        qDebug() << "disconnected";
+        m_socket->deleteLater();
+    }
+    else{
+        qDebug() << "connected, ploho";
+    }
 }
