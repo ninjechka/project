@@ -13,13 +13,15 @@ class Client : public QObject
 public:
     Client();
 
+    void disconnect();
 private:
      QString m_ip;
     enum Commands {
         getGraph, //запрос получения графа
         sendGraph, //отправляется граф
         sendPackage,// отправляется пакет,
-        getPackage
+        getPackage,
+        nodeDisconnected
     };
 
     QMap<QPair<QString, int>, int> m_listenTo; // кого слушаем ключ пара - айпи - порт, значение - задержка до узла
