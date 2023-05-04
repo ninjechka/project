@@ -12,6 +12,7 @@ class Retranslator : public QTcpServer
 public:
     Retranslator(QString argFile);
 
+    void disconnect();
 private:
     int m_port;
     QString m_ip;
@@ -22,7 +23,8 @@ private:
         getGraph,
         sendGraph,
         sendPackage,
-        getPackage
+        getPackage,
+        nodeDisconnected
     };
 
     QTimer* m_timer;
