@@ -1,11 +1,9 @@
 #include <QCoreApplication>
-#include <Retranslator.h>
+#include <server.h>
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-
-    Retranslator r1("node1.txt");
-  //  Retranslator r2("node2.txt");
-
+    Server s;
     return a.exec();
 }

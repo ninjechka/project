@@ -44,6 +44,7 @@ void Retranslator::slotReady()
     {
         QString str;
         in >> str;
+        qDebug() << str;
         QString command = str.split('#').at(0);
         if (command == QString::number(sendGraph))
         {
@@ -52,6 +53,7 @@ void Retranslator::slotReady()
             int s = m_listenTo[qMakePair(from.at(0), from.at(1).toInt())];
             QString st = "-" + m_id + "-" + QString::number(s) + "_" + m_id;
             str.append(st);
+            qDebug() << str;
             sendToClient(str);
         }
         if (command == QString::number(getPackage))
