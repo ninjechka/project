@@ -2,6 +2,7 @@
 #include <Retranslator.h>
 #include <QTextStream>
 #include <QFile>
+#include <QAbstractSocket>
 
 Retranslator::Retranslator(QString argFile) : m_argsFile(argFile)
 {
@@ -59,6 +60,11 @@ void Retranslator::slotReady()
             qDebug() << "get package";
             sendToClient(QString::number(getPackage));
         }
+        if (command == QString::number(nodeDisconnected))
+        {
+            sendToServer(QString::number(getGraph));
+            qDebug() << "Node disconnected";
+        }
     }
     else
         qDebug() << "DataStream error";
@@ -72,7 +78,6 @@ void Retranslator::incomingConnection(qintptr socketDescriptor)
     connect (m_serverSocket, &QTcpSocket::disconnected, m_serverSocket, &QTcpSocket::deleteLater);
     m_clientSockets.push_back(m_serverSocket);
     qDebug() << m_id <<" client connected " << socketDescriptor;
-
 }
 void Retranslator::slotReadyRead()
 {
@@ -148,4 +153,18 @@ void Retranslator::readFile()
         }
     }
     file.close();
+}
+
+void Retranslator::disconnect(){
+    m_clientSocket->disconnectFromHost();
+    m_serverSocket->disconnectFromHost();
+    if((m_clientSocket->state() == QAbstractSocket::UnconnectedState || m_clientSocket->waitForDisconnected(1000)) && (m_serverSocket->waitForDisconnected(1000) || m_serverSocket->state() == QAbstractSocket::UnconnectedState))
+    {
+        qDebug() << "disconnected";
+        m_clientSocket->deleteLater();
+        m_serverSocket->deleteLater();
+    }
+    else{
+        qDebug() << "connected, ploho";
+    }
 }
